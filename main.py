@@ -29,8 +29,14 @@ hf_embeddings = PineconeEmbeddings(
     pinecone_api_key=MY_PINECONE_KEY
 )
 
-print("Connecting to local Ollama instance...")
-local_llm = ChatOllama(model="llama3.2:3b", temperature=0)
+print("Connecting to hosted Google Gemini pipeline...")
+# Replaces your old local_llm or ChatOllama block
+local_llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    google_api_key="AIzaSyBp_c9NdPOKypYBsniEKz_q0Ahyi4Wljlc",  # <--- Pass your key directly here
+    temperature=0,
+    streaming=True
+)
 
 # Instantiate raw client for dashboard configuration tasks
 pc = Pinecone(api_key=MY_PINECONE_KEY)
