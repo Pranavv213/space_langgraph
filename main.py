@@ -13,6 +13,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langgraph.graph import MessagesState, StateGraph, START, END
+from langchain_pinecone import PineconeEmbeddings
 
 app = FastAPI(title="Multi-Format Dynamic LangGraph RAG Service")
 
@@ -22,10 +23,10 @@ app = FastAPI(title="Multi-Format Dynamic LangGraph RAG Service")
 
 MY_PINECONE_KEY = "pcsk_6cPP3h_KD6NTCcu3eZLpYv7deCKR5sVckjqhfwwY8Cz7d8bYFcJ9xFog1wbKHh2BJBFWAZ"
 
-print("Initializing Shared Hugging Face embedding space...")
-hf_embeddings = HuggingFaceEmbeddings(
-    model_name="BAAI/bge-large-en-v1.5", 
-    model_kwargs={"device": "cpu"}
+print("Initializing Managed Pinecone Cloud Inference Embeddings...")
+hf_embeddings = PineconeEmbeddings(
+    model="multilingual-e5-large", # Natively outputs 1024 dimensions
+    pinecone_api_key=MY_PINECONE_KEY
 )
 
 print("Connecting to local Ollama instance...")
