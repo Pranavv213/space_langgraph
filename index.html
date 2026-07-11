@@ -3,441 +3,1000 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Workspace · RAG UI</title>
+  <title>Notebook · RAG Workspace</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     }
+
     body {
-      background: #f0f4f9;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
+      background: #f9fafb;
+      height: 100vh;
+      overflow: hidden;
     }
+
     .app-container {
-      max-width: 960px;
-      width: 100%;
+      display: flex;
+      height: 100vh;
       background: white;
-      border-radius: 32px;
-      box-shadow: 0 20px 60px -12px rgba(0,0,0,0.15);
-      padding: 28px 32px 34px;
-      transition: 0.2s;
     }
-    h1 {
-      font-weight: 600;
-      font-size: 2rem;
-      letter-spacing: -0.01em;
-      color: #0b1e33;
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: 380px;
+      min-width: 380px;
+      background: #f7f8fa;
+      border-right: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
       display: flex;
       align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .sidebar-header .logo {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a1a1a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-header .logo span {
+      background: #1a1a1a;
+      color: white;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .workspace-status {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      background: #e5e7eb;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .workspace-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #6b7280;
+      display: inline-block;
+    }
+
+    .workspace-status .dot.active {
+      background: #10b981;
+    }
+
+    /* ===== SOURCES SECTION ===== */
+    .sources-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      min-height: 150px;
+      max-height: 300px;
+    }
+
+    .sources-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .sources-header h3 {
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .sources-header .actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .sources-header .actions button {
+      background: none;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #374151;
+      transition: 0.15s;
+      background: white;
+    }
+
+    .sources-header .actions button:hover {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+    }
+
+    .source-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #1a1a1a;
+      transition: 0.15s;
+    }
+
+    .source-item:hover {
+      border-color: #d1d5db;
+      background: #fafbfc;
+    }
+
+    .source-item .icon {
+      font-size: 16px;
+      opacity: 0.7;
+    }
+
+    .source-item .name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+
+    .source-item .badge {
+      font-size: 10px;
+      background: #e5e7eb;
+      padding: 2px 8px;
+      border-radius: 12px;
+      color: #6b7280;
+    }
+
+    .source-item .item-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .source-item .item-actions button {
+      background: none;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: 0.15s;
+      color: #6b7280;
+    }
+
+    .source-item .item-actions button:hover {
+      background: #f3f4f6;
+      color: #1a1a1a;
+    }
+
+    .source-item .item-actions .delete-btn:hover {
+      color: #ef4444;
+      background: #fef2f2;
+    }
+
+    .source-item .item-actions .update-btn:hover {
+      color: #3b82f6;
+      background: #eff6ff;
+    }
+
+    .empty-sources {
+      text-align: center;
+      padding: 20px;
+      color: #9ca3af;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .empty-sources .icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .empty-sources .action-btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 16px;
+      background: #1a1a1a;
+      color: white;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      border: none;
+      transition: 0.15s;
+    }
+
+    .empty-sources .action-btn:hover {
+      background: #333;
+    }
+
+    /* ===== UPDATE SECTION ===== */
+    .update-section {
+      margin-top: 12px;
+      padding: 14px 16px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+    }
+
+    .update-section .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .update-section .section-title .badge {
+      font-size: 10px;
+      background: #e5e7eb;
+      padding: 2px 8px;
+      border-radius: 12px;
+      color: #6b7280;
+      font-weight: 400;
+    }
+
+    .update-section .update-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .update-section .update-row label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #374151;
+      min-width: 70px;
+    }
+
+    .update-section .update-row input[type="text"] {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 12px;
+      background: #fafbfc;
+      outline: none;
+      transition: 0.15s;
+      min-width: 0;
+    }
+
+    .update-section .update-row input[type="text"]:focus {
+      border-color: #1a1a1a;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.08);
+    }
+
+    .update-section .update-row input[type="file"] {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: #fafbfc;
+      min-width: 0;
+    }
+
+    .update-section .update-row input[type="file"]::file-selector-button {
+      padding: 4px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #e5e7eb;
+      color: #374151;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .update-section .update-row input[type="file"]::file-selector-button:hover {
+      background: #d1d5db;
+    }
+
+    .update-section .update-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .update-section .update-actions button {
+      flex: 1;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .update-section .update-actions .btn-update {
+      background: #1a1a1a;
+      color: white;
+    }
+
+    .update-section .update-actions .btn-update:hover {
+      background: #333;
+    }
+
+    .update-section .update-actions .btn-update:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .update-section .update-actions .btn-clear {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .update-section .update-actions .btn-clear:hover {
+      background: #e5e7eb;
+    }
+
+    .update-section .update-feedback {
+      font-size: 12px;
+      margin-top: 6px;
+      min-height: 20px;
+    }
+
+    .update-section .update-feedback.success {
+      color: #10b981;
+    }
+
+    .update-section .update-feedback.error {
+      color: #ef4444;
+    }
+
+    .update-section .update-feedback.warning {
+      color: #f59e0b;
+    }
+
+    /* ===== CONFIG SECTION ===== */
+    .config-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .config-section .config-row {
+      display: flex;
       gap: 8px;
       margin-bottom: 8px;
     }
-    h1 small {
-      font-size: 0.85rem;
-      font-weight: 400;
-      color: #4a5b6e;
-      margin-left: 8px;
+
+    .config-section input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 12px;
+      background: white;
+      outline: none;
+      transition: 0.15s;
     }
-    .workspace-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 16px 0 20px;
+
+    .config-section input:focus {
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
     }
-    .btn {
-      background: #eef2f6;
+
+    .config-section .btn-sm {
+      padding: 8px 14px;
       border: none;
-      padding: 10px 24px;
-      border-radius: 60px;
+      border-radius: 6px;
+      font-size: 12px;
       font-weight: 500;
-      font-size: 0.95rem;
-      color: #1e2a3a;
       cursor: pointer;
       transition: 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      background: #e5e7eb;
+      color: #374151;
     }
-    .btn-primary {
-      background: #0b1e33;
-      color: white;
-      box-shadow: 0 4px 12px -4px rgba(11,30,51,0.25);
+
+    .config-section .btn-sm:hover {
+      background: #d1d5db;
     }
-    .btn-primary:hover { background: #1a314b; transform: translateY(-1px); }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #d0d9e3;
-    }
-    .btn-outline:hover { background: #e8edf3; }
-    .btn-success {
-      background: #1b8c6b;
+
+    .config-section .btn-sm.primary {
+      background: #1a1a1a;
       color: white;
     }
-    .btn-success:hover { background: #167a5d; }
-    .btn-danger {
-      background: #b13e4b;
-      color: white;
+
+    .config-section .btn-sm.primary:hover {
+      background: #333;
     }
-    .btn-danger:hover { background: #9a3540; }
-    .btn-secondary {
-      background: #4a6a8a;
-      color: white;
-    }
-    .btn-secondary:hover { background: #3a5a7a; }
-    .card {
-      background: #f8fafc;
-      border-radius: 20px;
-      padding: 18px 22px 22px;
-      margin: 12px 0 10px;
-      border: 1px solid #e6edf4;
-    }
-    .flex-row {
+
+    /* ===== MAIN CHAT AREA ===== */
+    .main-area {
+      flex: 1;
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 12px 16px;
+      flex-direction: column;
+      background: white;
+      position: relative;
     }
-    label {
+
+    .chat-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fafbfc;
+    }
+
+    .chat-header .title {
+      font-size: 16px;
       font-weight: 500;
-      color: #1f3347;
-      min-width: 90px;
+      color: #1a1a1a;
     }
-    input, .file-input-wrapper {
-      flex: 1;
-      min-width: 160px;
-      padding: 10px 16px;
-      border-radius: 40px;
-      border: 1px solid #d3dee9;
+
+    .chat-header .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-header .actions button {
+      padding: 6px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
       background: white;
-      font-size: 0.95rem;
-    }
-    input:focus {
-      outline: 2px solid #0b1e33;
-      outline-offset: 1px;
-      border-color: transparent;
-    }
-    .file-input-wrapper {
-      background: white;
-      padding: 6px 12px;
+      font-size: 12px;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+      transition: 0.15s;
+      color: #374151;
     }
-    .file-input-wrapper input[type="file"] {
-      border: none;
-      padding: 4px 0;
+
+    .chat-header .actions button:hover {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+    }
+
+    /* ===== MESSAGES ===== */
+    .messages-container {
       flex: 1;
-      min-width: 120px;
-      outline: none;
-    }
-    .chat-box {
-      background: white;
-      border-radius: 24px;
-      border: 1px solid #e2ebf3;
-      margin-top: 16px;
-      display: flex;
-      flex-direction: column;
-    }
-    .message-area {
-      padding: 16px 20px 8px;
       overflow-y: auto;
-      max-height: 320px;
-      min-height: 200px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      padding: 24px 32px;
+      background: #fafbfc;
     }
+
     .message {
-      padding: 10px 16px;
-      border-radius: 20px;
-      max-width: 85%;
-      background: #f0f4fa;
-      align-self: flex-start;
-      color: #1b2b3d;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      word-break: break-word;
+      margin-bottom: 20px;
+      max-width: 80%;
       animation: fadeIn 0.3s ease;
     }
+
     .message.user {
-      background: #0b1e33;
-      color: white;
-      align-self: flex-end;
+      margin-left: auto;
     }
-    .message.error {
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
-    }
-    .message.system {
-      background: #e6f0fa;
-      color: #1a3a5a;
-      font-style: italic;
-      border-left: 3px solid #4a8ab5;
-    }
-    .chat-input-row {
-      display: flex;
-      gap: 10px;
-      padding: 12px 16px 16px;
-      border-top: 1px solid #e2ebf3;
-      background: #fbfdff;
-      border-radius: 0 0 24px 24px;
-    }
-    .chat-input-row input {
-      flex: 1;
-      border-radius: 40px;
-      padding: 10px 16px;
-    }
-    .chat-input-row .btn {
-      border-radius: 40px;
-      padding: 10px 28px;
-    }
-    .status-badge {
-      font-size: 0.8rem;
-      background: #dce5ef;
-      padding: 4px 16px;
-      border-radius: 40px;
-      color: #1e3349;
-      display: inline-block;
-    }
-    .status-badge.active {
-      background: #d2e3d8;
-      color: #0f4a3a;
-    }
-    .divider {
-      border: none;
-      border-top: 1px solid #dde6ef;
-      margin: 16px 0;
-    }
-    .hidden {
-      display: none !important;
-    }
-    .mt-2 { margin-top: 10px; }
-    .mb-2 { margin-bottom: 10px; }
-    .flex { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .file-upload-group {
-      background: #f1f6fc;
-      border-radius: 60px;
-      padding: 4px 8px 4px 16px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-      margin: 8px 0;
-    }
-    .file-upload-group .btn { 
-      background: white; 
-      border: 1px solid #cddae8;
-      padding: 6px 16px;
-      font-size: 0.85rem;
-    }
-    .file-upload-group .btn:hover { background: #e8edf3; }
-    .small-note { 
-      color: #4f6a83; 
-      font-size: 0.8rem; 
-      margin-top: 4px;
-      min-height: 20px;
-    }
-    .small-note.error { color: #b13e4b; }
-    .small-note.success { color: #1b8c6b; }
-    .server-config {
-      background: #f8fafc;
-      border: 1px solid #e6edf4;
+
+    .message .bubble {
+      padding: 12px 16px;
       border-radius: 12px;
-      padding: 10px 16px;
-      margin-bottom: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      word-wrap: break-word;
+    }
+
+    .message.user .bubble {
+      background: #1a1a1a;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant .bubble {
+      background: white;
+      color: #1a1a1a;
+      border: 1px solid #e5e7eb;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.system .bubble {
+      background: #f3f4f6;
+      color: #6b7280;
+      font-style: italic;
+      border: 1px solid #e5e7eb;
+      max-width: 100%;
+    }
+
+    /* ===== INPUT AREA ===== */
+    .input-area {
+      padding: 16px 24px 20px;
+      border-top: 1px solid #e5e7eb;
+      background: white;
       display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-area .input-wrapper {
+      flex: 1;
+      display: flex;
+      gap: 8px;
       align-items: center;
+      background: #fafbfc;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 4px 4px 4px 16px;
+      transition: 0.15s;
+    }
+
+    .input-area .input-wrapper:focus-within {
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.08);
+    }
+
+    .input-area .input-wrapper input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px 0;
+      font-size: 14px;
+      outline: none;
+      color: #1a1a1a;
+    }
+
+    .input-area .input-wrapper input::placeholder {
+      color: #9ca3af;
+    }
+
+    .input-area .input-wrapper .attach-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      color: #6b7280;
+      transition: 0.15s;
+    }
+
+    .input-area .input-wrapper .attach-btn:hover {
+      color: #1a1a1a;
+    }
+
+    .input-area .send-btn {
+      padding: 10px 20px;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.15s;
+      white-space: nowrap;
+    }
+
+    .input-area .send-btn:hover {
+      background: #333;
+      transform: translateY(-1px);
+    }
+
+    .input-area .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+    }
+
+    .modal .form-group {
+      margin-bottom: 14px;
+    }
+
+    .modal .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .modal .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: 0.15s;
+    }
+
+    .modal .form-group input:focus {
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.08);
+    }
+
+    .modal .modal-actions {
+      display: flex;
       gap: 10px;
-      flex-wrap: wrap;
+      margin-top: 20px;
+      justify-content: flex-end;
     }
-    .server-config label {
-      min-width: auto;
-      font-size: 0.85rem;
+
+    .modal .modal-actions button {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.15s;
     }
-    .server-config input {
-      flex: 0.5;
-      min-width: 200px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
+
+    .modal .modal-actions .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
     }
+
+    .modal .modal-actions .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .modal .modal-actions .btn-primary {
+      background: #1a1a1a;
+      color: white;
+    }
+
+    .modal .modal-actions .btn-primary:hover {
+      background: #333;
+    }
+
+    .modal .error-text {
+      color: #ef4444;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    /* ===== ANIMATIONS ===== */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .workspace-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+
+    /* ===== SCROLLBAR ===== */
+    .messages-container::-webkit-scrollbar,
+    .sidebar::-webkit-scrollbar {
+      width: 5px;
     }
-    .btn-sm {
-      padding: 6px 14px;
-      font-size: 0.85rem;
+
+    .messages-container::-webkit-scrollbar-track,
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb,
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 10px;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb:hover,
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        min-width: 100%;
+        max-height: 50vh;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .app-container {
+        flex-direction: column;
+      }
+
+      .messages-container {
+        padding: 16px;
+      }
+
+      .message {
+        max-width: 90%;
+      }
+    }
+
+    /* Loading dots */
+    .typing-indicator {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px 8px;
+    }
+
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: #9ca3af;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite both;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
     }
   </style>
 </head>
 <body>
-<div class="app-container" id="app">
-  <h1>
-    📁 Workspace
-    <small>RAG · Pinecone</small>
-  </h1>
-  
-  <!-- Server Configuration -->
-  <div class="server-config">
-    <label>🔗 Backend URL:</label>
-    <input type="text" id="backendUrl" placeholder="http://localhost:8000" value="http://localhost:8000">
-    <button class="btn btn-outline btn-sm" id="saveServerBtn">Save</button>
-    <span style="font-size:0.75rem;color:#4f6a83;">(e.g., http://192.168.1.100:8000)</span>
-  </div>
-  
-  <!-- ACTION ROW -->
-  <div class="workspace-actions">
-    <button class="btn btn-primary" id="showCreateBtn">➕ Create Workspace</button>
-    <button class="btn btn-outline" id="showJoinBtn">🔑 Join Workspace</button>
-    <span class="status-badge" id="workspaceStatus">⚡ Not Connected</span>
-  </div>
-
-  <!-- CREATE CARD -->
-  <div id="createCard" class="card hidden">
-    <div class="flex-row">
-      <label>Index Name</label>
-      <input type="text" id="createIndexName" placeholder="my-rag-index" value="demo-workspace">
-    </div>
-    <div class="flex-row mt-2">
-      <label>Password</label>
-      <input type="password" id="createPassword" placeholder="Min 4 characters" value="pass123">
-    </div>
-    <div class="flex-row mt-2">
-      <label>Cloud / Region</label>
-      <input type="text" id="createCloud" value="aws" style="flex:0.5;min-width:80px;">
-      <input type="text" id="createRegion" value="us-east-1" style="flex:0.5;min-width:80px;">
-      <button class="btn btn-success" id="createWorkspaceBtn">Create</button>
-    </div>
-    <div id="createFeedback" class="small-note"></div>
-  </div>
-
-  <!-- JOIN CARD -->
-  <div id="joinCard" class="card hidden">
-    <div class="flex-row">
-      <label>Index Name</label>
-      <input type="text" id="joinIndexName" placeholder="Workspace name" value="demo-workspace">
-    </div>
-    <div class="flex-row mt-2">
-      <label>Password</label>
-      <input type="password" id="joinPassword" placeholder="Workspace password" value="pass123">
-      <button class="btn btn-primary" id="joinWorkspaceBtn">Join</button>
-    </div>
-    <div id="joinFeedback" class="small-note"></div>
-  </div>
-
-  <!-- CHAT SECTION -->
-  <div id="chatSection" class="hidden">
-    <hr class="divider">
-    <div class="workspace-info">
-      <span><strong id="activeWorkspaceName">workspace</strong> <span class="status-badge active" id="activeBadge">● Active</span></span>
-      <div style="flex:1;"></div>
-      <button class="btn btn-outline btn-sm" id="refreshChatBtn" title="Clear chat">🔄 Clear</button>
-      <button class="btn btn-danger btn-sm" id="leaveWorkspaceBtn">🚪 Leave</button>
-    </div>
-
-    <!-- File Upload -->
-    <div class="file-upload-group">
-      <span style="font-weight:450;">📎</span>
-      <input type="file" id="uploadFileInput" accept=".pdf,.txt,.csv">
-      <button class="btn btn-primary btn-sm" id="uploadDocBtn">Add</button>
-      <button class="btn btn-secondary btn-sm" id="updateDocBtn">Update</button>
-      <input type="text" id="updateFileName" placeholder="old filename" style="width:130px;padding:6px 12px;border-radius:40px;border:1px solid #d3dee9;font-size:0.85rem;">
-      <span style="font-size:0.7rem;color:#3d5a78;">(replace)</span>
-    </div>
-    <div id="uploadFeedback" class="small-note"></div>
-
-    <!-- Chat -->
-    <div class="chat-box">
-      <div class="message-area" id="messageArea">
-        <div class="message system">💬 Ask a question about your documents.</div>
+<div class="app-container">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        📓 Notebook
+        <span>RAG</span>
       </div>
-      <div class="chat-input-row">
-        <input type="text" id="chatInput" placeholder="Ask something...">
-        <button class="btn btn-primary" id="sendChatBtn">Send</button>
+    </div>
+
+    <div class="workspace-status" id="workspaceStatus">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">Not connected</span>
+    </div>
+
+    <!-- Sources Section -->
+    <div class="sources-section">
+      <div class="sources-header">
+        <h3>📚 Sources</h3>
+        <div class="actions">
+          <button id="addSourceBtn">+ Add</button>
+          <button id="refreshSourcesBtn">⟳</button>
+        </div>
       </div>
+      <div id="sourcesList">
+        <div class="empty-sources" id="emptySources">
+          <span class="icon">📄</span>
+          <p>No sources added yet</p>
+          <p style="font-size: 12px; margin-top: 4px;">Upload PDFs, TXT, or CSV files</p>
+          <button class="action-btn" id="uploadSourceBtn">+ Add source</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Update Section -->
+    <div class="update-section">
+      <div class="section-title">
+        🔄 Update Source
+        <span class="badge">Replace existing file</span>
+      </div>
+      <div class="update-row">
+        <label>Old File:</label>
+        <input type="text" id="updateFileName" placeholder="Enter filename to replace..." />
+      </div>
+      <div class="update-row">
+        <label>New File:</label>
+        <input type="file" id="updateFileInput" accept=".pdf,.txt,.csv" />
+      </div>
+      <div class="update-actions">
+        <button class="btn-update" id="updateBtn">🔄 Update</button>
+        <button class="btn-clear" id="clearUpdateBtn">Clear</button>
+      </div>
+      <div class="update-feedback" id="updateFeedback"></div>
+    </div>
+
+    <!-- Config Section -->
+    <div class="config-section">
+      <div class="config-row">
+        <input type="text" id="backendUrl" placeholder="Backend URL" value="http://localhost:8000">
+        <button class="btn-sm primary" id="saveServerBtn">Save</button>
+      </div>
+      <div class="config-row" style="gap: 6px; flex-wrap: wrap;">
+        <input type="text" id="joinIndexName" placeholder="Workspace name" value="index-4" style="flex: 1.5;">
+        <input type="password" id="joinPassword" placeholder="Password" value="abcd" style="flex: 1;">
+        <button class="btn-sm" id="joinWorkspaceBtn">Join</button>
+        <button class="btn-sm" id="createWorkspaceBtn">Create</button>
+      </div>
+      <div id="connectionFeedback" style="font-size: 12px; color: #6b7280; margin-top: 4px;"></div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CHAT AREA ===== -->
+  <main class="main-area">
+    <div class="chat-header">
+      <span class="title" id="chatTitle">💬 Chat</span>
+      <div class="actions">
+        <button id="clearChatBtn">Clear</button>
+        <button id="leaveWorkspaceBtn">Leave</button>
+      </div>
+    </div>
+
+    <div class="messages-container" id="messagesContainer">
+      <div class="message system">
+        <div class="bubble">👋 Welcome! Join a workspace or create a new one to get started.</div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrapper">
+        <button class="attach-btn" id="attachBtn" title="Upload document">📎</button>
+        <input type="text" id="chatInput" placeholder="Start typing..." autofocus>
+        <input type="file" id="fileInput" style="display: none;" accept=".pdf,.txt,.csv">
+      </div>
+      <button class="send-btn" id="sendBtn">Send</button>
+    </div>
+  </main>
+</div>
+
+<!-- ===== CREATE MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Create Workspace</h2>
+    <div class="form-group">
+      <label>Workspace Name</label>
+      <input type="text" id="modalIndexName" placeholder="my-workspace">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="modalPassword" placeholder="Min 4 characters">
+    </div>
+    <div class="form-group" id="modalExtraFields" style="display: none;">
+      <label>Cloud</label>
+      <input type="text" id="modalCloud" value="aws">
+      <label style="margin-top: 8px;">Region</label>
+      <input type="text" id="modalRegion" value="us-east-1">
+    </div>
+    <div id="modalError" class="error-text"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="modalCancel">Cancel</button>
+      <button class="btn-primary" id="modalConfirm">Confirm</button>
     </div>
   </div>
 </div>
 
 <script>
 (function() {
-  // ----- DOM refs -----
+  // ===== DOM REFS =====
   const $ = id => document.getElementById(id);
-  const showCreateBtn = $('showCreateBtn');
-  const showJoinBtn = $('showJoinBtn');
-  const createCard = $('createCard');
-  const joinCard = $('joinCard');
-  const createIndexName = $('createIndexName');
-  const createPassword = $('createPassword');
-  const createCloud = $('createCloud');
-  const createRegion = $('createRegion');
-  const createWorkspaceBtn = $('createWorkspaceBtn');
-  const createFeedback = $('createFeedback');
+  const statusDot = $('statusDot');
+  const statusText = $('statusText');
+  const sourcesList = $('sourcesList');
+  const messagesContainer = $('messagesContainer');
+  const chatInput = $('chatInput');
+  const sendBtn = $('sendBtn');
+  const fileInput = $('fileInput');
+  const updateFileInput = $('updateFileInput');
+  const updateFileName = $('updateFileName');
+  const updateBtn = $('updateBtn');
+  const clearUpdateBtn = $('clearUpdateBtn');
+  const updateFeedback = $('updateFeedback');
+  const attachBtn = $('attachBtn');
+  const addSourceBtn = $('addSourceBtn');
+  const refreshSourcesBtn = $('refreshSourcesBtn');
+  const backendUrl = $('backendUrl');
+  const saveServerBtn = $('saveServerBtn');
   const joinIndexName = $('joinIndexName');
   const joinPassword = $('joinPassword');
   const joinWorkspaceBtn = $('joinWorkspaceBtn');
-  const joinFeedback = $('joinFeedback');
-  const chatSection = $('chatSection');
-  const activeWorkspaceName = $('activeWorkspaceName');
-  const messageArea = $('messageArea');
-  const chatInput = $('chatInput');
-  const sendChatBtn = $('sendChatBtn');
-  const uploadFileInput = $('uploadFileInput');
-  const uploadDocBtn = $('uploadDocBtn');
-  const updateDocBtn = $('updateDocBtn');
-  const updateFileName = $('updateFileName');
-  const uploadFeedback = $('uploadFeedback');
-  const workspaceStatus = $('workspaceStatus');
+  const createWorkspaceBtn = $('createWorkspaceBtn');
+  const connectionFeedback = $('connectionFeedback');
+  const clearChatBtn = $('clearChatBtn');
   const leaveWorkspaceBtn = $('leaveWorkspaceBtn');
-  const refreshChatBtn = $('refreshChatBtn');
-  const backendUrlInput = $('backendUrl');
-  const saveServerBtn = $('saveServerBtn');
+  const chatTitle = $('chatTitle');
+  const modalOverlay = $('modalOverlay');
+  const modalTitle = $('modalTitle');
+  const modalIndexName = $('modalIndexName');
+  const modalPassword = $('modalPassword');
+  const modalCloud = $('modalCloud');
+  const modalRegion = $('modalRegion');
+  const modalExtraFields = $('modalExtraFields');
+  const modalError = $('modalError');
+  const modalConfirm = $('modalConfirm');
+  const modalCancel = $('modalCancel');
 
-  // ---- Get backend URL ----
+  // ===== STATE =====
+  let currentWorkspace = null;
+  let currentPassword = null;
+  let sources = [];
+
+  // ===== HELPERS =====
   function getBackendUrl() {
     let url = localStorage.getItem('backendUrl');
     if (!url) {
       url = 'http://localhost:8000';
       localStorage.setItem('backendUrl', url);
     }
-    backendUrlInput.value = url;
+    backendUrl.value = url;
     return url;
   }
 
   function setBackendUrl(url) {
     localStorage.setItem('backendUrl', url);
-    backendUrlInput.value = url;
+    backendUrl.value = url;
   }
 
-  // Save server URL
-  saveServerBtn.addEventListener('click', () => {
-    let url = backendUrlInput.value.trim();
-    if (!url) {
-      url = 'http://localhost:8000';
-    }
-    // Remove trailing slash if present
-    if (url.endsWith('/')) {
-      url = url.slice(0, -1);
-    }
-    setBackendUrl(url);
-    alert(`✅ Backend URL saved: ${url}`);
-  });
+  function getStoredCreds() {
+    const idx = localStorage.getItem('workspaceIndex');
+    const pwd = localStorage.getItem('workspacePassword');
+    return { index: idx, password: pwd };
+  }
 
-  // ---- API helper ----
+  function setStoredCreds(index, password) {
+    if (index) localStorage.setItem('workspaceIndex', index);
+    else localStorage.removeItem('workspaceIndex');
+    if (password) localStorage.setItem('workspacePassword', password);
+    else localStorage.removeItem('workspacePassword');
+  }
+
+  function clearStoredCreds() {
+    localStorage.removeItem('workspaceIndex');
+    localStorage.removeItem('workspacePassword');
+  }
+
+  function setFeedback(element, text, type = '') {
+    element.textContent = text;
+    element.className = `update-feedback ${type}`;
+  }
+
+  function setConnectionFeedback(text, type = '') {
+    connectionFeedback.textContent = text;
+    connectionFeedback.className = type;
+    if (type === 'success') connectionFeedback.style.color = '#10b981';
+    else if (type === 'error') connectionFeedback.style.color = '#ef4444';
+    else if (type === 'warning') connectionFeedback.style.color = '#f59e0b';
+    else connectionFeedback.style.color = '#6b7280';
+  }
+
   async function apiCall(endpoint, options = {}) {
     const baseUrl = getBackendUrl();
     const url = `${baseUrl}${endpoint}`;
@@ -463,101 +1022,129 @@
     return response;
   }
 
-  // ---- Storage helpers ----
-  function getStoredCreds() {
-    const idx = localStorage.getItem('workspaceIndex');
-    const pwd = localStorage.getItem('workspacePassword');
-    return { index: idx, password: pwd };
-  }
-
-  function setStoredCreds(index, password) {
-    if (index) localStorage.setItem('workspaceIndex', index);
-    else localStorage.removeItem('workspaceIndex');
-    if (password) localStorage.setItem('workspacePassword', password);
-    else localStorage.removeItem('workspacePassword');
-  }
-
-  function clearStoredCreds() {
-    localStorage.removeItem('workspaceIndex');
-    localStorage.removeItem('workspacePassword');
-  }
-
-  function isJoined() {
-    const { index, password } = getStoredCreds();
-    return !!(index && password);
-  }
-
-  // ---- UI update ----
-  function updateUIForJoined() {
-    const { index, password } = getStoredCreds();
-    if (index && password) {
-      chatSection.classList.remove('hidden');
-      activeWorkspaceName.textContent = index;
-      workspaceStatus.textContent = `🔒 ${index}`;
-      workspaceStatus.className = 'status-badge active';
-      createCard.classList.add('hidden');
-      joinCard.classList.add('hidden');
-    } else {
-      chatSection.classList.add('hidden');
-      workspaceStatus.textContent = '⚡ Not Connected';
-      workspaceStatus.className = 'status-badge';
-    }
-  }
-
-  function resetWorkspace() {
-    clearStoredCreds();
-    updateUIForJoined();
-    createCard.classList.add('hidden');
-    joinCard.classList.add('hidden');
-    messageArea.innerHTML = `<div class="message system">💬 Join or create a workspace to start.</div>`;
-    uploadFeedback.textContent = '';
-    uploadFeedback.className = 'small-note';
-  }
-
   function addMessage(text, type = 'assistant') {
     const div = document.createElement('div');
     div.className = `message ${type}`;
-    div.textContent = text;
-    messageArea.appendChild(div);
-    messageArea.scrollTop = messageArea.scrollHeight;
+    div.innerHTML = `<div class="bubble">${text}</div>`;
+    messagesContainer.appendChild(div);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
     return div;
   }
 
-  function setFeedback(element, text, type = '') {
-    element.textContent = text;
-    element.className = `small-note ${type}`;
+  function updateWorkspaceStatus() {
+    const { index, password } = getStoredCreds();
+    if (index && password) {
+      currentWorkspace = index;
+      currentPassword = password;
+      statusDot.className = 'dot active';
+      statusText.textContent = `Connected to "${index}"`;
+      chatTitle.textContent = `💬 ${index}`;
+      document.querySelector('.chat-header .title').textContent = `💬 ${index}`;
+      setConnectionFeedback(`✅ Connected to "${index}"`, 'success');
+    } else {
+      currentWorkspace = null;
+      currentPassword = null;
+      statusDot.className = 'dot';
+      statusText.textContent = 'Not connected';
+      chatTitle.textContent = '💬 Chat';
+      document.querySelector('.chat-header .title').textContent = '💬 Chat';
+      setConnectionFeedback('⚠️ Not connected to any workspace', 'warning');
+    }
   }
 
-  // ---- Toggle cards ----
-  showCreateBtn.addEventListener('click', () => {
-    createCard.classList.toggle('hidden');
-    joinCard.classList.add('hidden');
-    createFeedback.textContent = '';
-    createFeedback.className = 'small-note';
-  });
+  function loadSources() {
+    const saved = localStorage.getItem(`sources_${currentWorkspace}`);
+    if (saved) {
+      try {
+        sources = JSON.parse(saved);
+      } catch (e) {
+        sources = [];
+      }
+    } else {
+      sources = [];
+    }
+    renderSources();
+  }
 
-  showJoinBtn.addEventListener('click', () => {
-    joinCard.classList.toggle('hidden');
-    createCard.classList.add('hidden');
-    joinFeedback.textContent = '';
-    joinFeedback.className = 'small-note';
-  });
+  function saveSources() {
+    if (currentWorkspace) {
+      localStorage.setItem(`sources_${currentWorkspace}`, JSON.stringify(sources));
+    }
+    renderSources();
+  }
 
-  // ---- CREATE workspace ----
-  createWorkspaceBtn.addEventListener('click', async () => {
-    const name = createIndexName.value.trim();
-    const password = createPassword.value.trim();
-    const cloud = createCloud.value.trim() || 'aws';
-    const region = createRegion.value.trim() || 'us-east-1';
-    
-    if (!name || password.length < 4) {
-      setFeedback(createFeedback, '❌ Index name & password (min 4 chars) required.', 'error');
+  function renderSources() {
+    if (sources.length === 0) {
+      sourcesList.innerHTML = `
+        <div class="empty-sources" id="emptySources">
+          <span class="icon">📄</span>
+          <p>No sources added yet</p>
+          <p style="font-size: 12px; margin-top: 4px;">Upload PDFs, TXT, or CSV files</p>
+          <button class="action-btn" id="uploadSourceBtn">+ Add source</button>
+        </div>
+      `;
+      const newUploadBtn = document.getElementById('uploadSourceBtn');
+      if (newUploadBtn) {
+        newUploadBtn.addEventListener('click', () => fileInput.click());
+      }
       return;
     }
-    
-    setFeedback(createFeedback, '⏳ Creating workspace...', '');
-    createWorkspaceBtn.disabled = true;
-    
+
+    let html = '';
+    sources.forEach((source, index) => {
+      const icon = source.endsWith('.pdf') ? '📄' : 
+                   source.endsWith('.csv') ? '📊' : '📃';
+      html += `
+        <div class="source-item">
+          <span class="icon">${icon}</span>
+          <span class="name" title="${source}">${source}</span>
+          <span class="badge">${index + 1}</span>
+          <div class="item-actions">
+            <button class="update-btn" data-filename="${source}" title="Update this file">✏️</button>
+            <button class="delete-btn" data-filename="${source}" title="Delete this file">✕</button>
+          </div>
+        </div>
+      `;
+    });
+    sourcesList.innerHTML = html;
+
+    document.querySelectorAll('.update-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const filename = btn.dataset.filename;
+        updateFileName.value = filename;
+        updateFileInput.focus();
+        setFeedback(updateFeedback, `📝 Ready to update "${filename}"`, '');
+      });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const filename = btn.dataset.filename;
+        deleteSource(filename);
+      });
+    });
+  }
+
+  // ===== API CALLS =====
+  async function joinWorkspace(name, password) {
+    try {
+      const resp = await apiCall('/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index_name: name, password, question: 'test' })
+      });
+      
+      setStoredCreds(name, password);
+      updateWorkspaceStatus();
+      loadSources();
+      messagesContainer.innerHTML = `<div class="message system"><div class="bubble">🔓 Joined workspace "${name}". Ask away!</div></div>`;
+      return true;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async function createWorkspace(name, password, cloud = 'aws', region = 'us-east-1') {
     try {
       const resp = await apiCall('/create', {
         method: 'POST',
@@ -566,242 +1153,404 @@
       });
       
       const data = await resp.json();
-      setFeedback(createFeedback, `✅ ${data.message || 'Workspace created!'}`, 'success');
-      
-      // Auto-join
       setStoredCreds(name, password);
-      updateUIForJoined();
-      createCard.classList.add('hidden');
-      joinCard.classList.add('hidden');
-      messageArea.innerHTML = `<div class="message system">✅ Workspace "${name}" ready. Upload documents & ask questions.</div>`;
-      uploadFeedback.textContent = '';
-      uploadFeedback.className = 'small-note';
-      
+      updateWorkspaceStatus();
+      loadSources();
+      messagesContainer.innerHTML = `<div class="message system"><div class="bubble">✅ Workspace "${name}" created and ready!</div></div>`;
+      return data;
     } catch (err) {
-      console.error('Create error:', err);
-      setFeedback(createFeedback, `❌ ${err.message}`, 'error');
-    } finally {
-      createWorkspaceBtn.disabled = false;
-    }
-  });
-
-  // ---- JOIN workspace ----
-  joinWorkspaceBtn.addEventListener('click', async () => {
-    const name = joinIndexName.value.trim();
-    const password = joinPassword.value.trim();
-    
-    if (!name || !password) {
-      setFeedback(joinFeedback, '❌ Index name and password required.', 'error');
-      return;
-    }
-    
-    setFeedback(joinFeedback, '⏳ Verifying...', '');
-    joinWorkspaceBtn.disabled = true;
-    
-    try {
-      // Test with a lightweight query
-      const resp = await apiCall('/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ index_name: name, password, question: 'test' })
-      });
-      
-      // Success
-      setStoredCreds(name, password);
-      updateUIForJoined();
-      joinCard.classList.add('hidden');
-      createCard.classList.add('hidden');
-      setFeedback(joinFeedback, `✅ Joined "${name}"`, 'success');
-      messageArea.innerHTML = `<div class="message system">🔓 Joined workspace "${name}". Ask away!</div>`;
-      uploadFeedback.textContent = '';
-      uploadFeedback.className = 'small-note';
-      
-    } catch (err) {
-      console.error('Join error:', err);
-      setFeedback(joinFeedback, `❌ ${err.message}`, 'error');
-    } finally {
-      joinWorkspaceBtn.disabled = false;
-    }
-  });
-
-  // ---- LEAVE ----
-  leaveWorkspaceBtn.addEventListener('click', () => {
-    resetWorkspace();
-    messageArea.innerHTML = `<div class="message system">👋 Left workspace.</div>`;
-    uploadFeedback.textContent = '';
-    uploadFeedback.className = 'small-note';
-  });
-
-  // ---- SEND CHAT ----
-  async function sendChatQuestion(question) {
-    const { index, password } = getStoredCreds();
-    if (!index || !password) {
-      addMessage('⚠️ Please join a workspace first.', 'error');
-      return;
-    }
-    
-    if (!question.trim()) return;
-    
-    // Add user message
-    addMessage(question, 'user');
-    chatInput.value = '';
-    
-    // Add placeholder
-    const botMsg = addMessage('⏳ Thinking...', 'assistant');
-    
-    try {
-      const resp = await apiCall('/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ index_name: index, password, question })
-      });
-      
-      // Streaming
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let fullAnswer = '';
-      botMsg.textContent = '';
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        fullAnswer += chunk;
-        botMsg.textContent = fullAnswer;
-        messageArea.scrollTop = messageArea.scrollHeight;
-      }
-      
-      if (!fullAnswer.trim()) {
-        botMsg.textContent = '⚠️ Empty response from server.';
-        botMsg.className = 'message error';
-      }
-      
-    } catch (err) {
-      console.error('Query error:', err);
-      botMsg.textContent = `❌ ${err.message}`;
-      botMsg.className = 'message error';
+      throw err;
     }
   }
 
-  sendChatBtn.addEventListener('click', () => {
-    const q = chatInput.value.trim();
-    if (q) sendChatQuestion(q);
-  });
-
-  chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendChatBtn.click();
-  });
-
-  // ---- UPLOAD document ----
-  uploadDocBtn.addEventListener('click', async () => {
-    const { index, password } = getStoredCreds();
-    if (!index || !password) {
-      setFeedback(uploadFeedback, '⚠️ Join a workspace first.', 'error');
-      return;
+  async function uploadDocument(file) {
+    if (!currentWorkspace || !currentPassword) {
+      throw new Error('Please join a workspace first');
     }
-    
-    const file = uploadFileInput.files[0];
-    if (!file) {
-      setFeedback(uploadFeedback, '⚠️ Select a file.', 'error');
-      return;
-    }
-    
-    setFeedback(uploadFeedback, '⏳ Uploading...', '');
-    uploadDocBtn.disabled = true;
     
     const formData = new FormData();
-    formData.append('index_name', index);
-    formData.append('password', password);
+    formData.append('index_name', currentWorkspace);
+    formData.append('password', currentPassword);
     formData.append('file', file);
     
-    try {
-      const resp = await apiCall('/add', {
-        method: 'POST',
-        body: formData
-      });
-      
-      const data = await resp.json();
-      setFeedback(uploadFeedback, `✅ ${data.status || 'Uploaded'} (${data.chunks_uploaded || 0} chunks)`, 'success');
-      uploadFileInput.value = '';
-      addMessage(`📄 Uploaded: ${file.name} (${data.chunks_uploaded || 0} chunks)`, 'system');
-      
-    } catch (err) {
-      console.error('Upload error:', err);
-      setFeedback(uploadFeedback, `❌ ${err.message}`, 'error');
-    } finally {
-      uploadDocBtn.disabled = false;
+    const resp = await apiCall('/add', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await resp.json();
+    
+    if (!sources.includes(file.name)) {
+      sources.push(file.name);
+      saveSources();
     }
-  });
+    
+    return data;
+  }
 
-  // ---- UPDATE document ----
-  updateDocBtn.addEventListener('click', async () => {
-    const { index, password } = getStoredCreds();
-    if (!index || !password) {
-      setFeedback(uploadFeedback, '⚠️ Join a workspace first.', 'error');
-      return;
+  async function updateDocument(oldFileName, newFile) {
+    if (!currentWorkspace || !currentPassword) {
+      throw new Error('Please join a workspace first');
     }
-    
-    const file = uploadFileInput.files[0];
-    const oldName = updateFileName.value.trim();
-    
-    if (!file || !oldName) {
-      setFeedback(uploadFeedback, '⚠️ Select file & specify old filename.', 'error');
-      return;
-    }
-    
-    setFeedback(uploadFeedback, '⏳ Updating...', '');
-    updateDocBtn.disabled = true;
     
     const formData = new FormData();
-    formData.append('index_name', index);
-    formData.append('password', password);
-    formData.append('old_file_name', oldName);
-    formData.append('new_file', file);
+    formData.append('index_name', currentWorkspace);
+    formData.append('password', currentPassword);
+    formData.append('old_file_name', oldFileName);
+    formData.append('new_file', newFile);
+    
+    const resp = await apiCall('/update', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await resp.json();
+    
+    // Update the sources list with the new filename
+    const index = sources.indexOf(oldFileName);
+    if (index !== -1) {
+      sources[index] = newFile.name;
+      saveSources();
+    } else {
+      // If old file not found in sources, just add the new one
+      if (!sources.includes(newFile.name)) {
+        sources.push(newFile.name);
+        saveSources();
+      }
+    }
+    
+    return data;
+  }
+
+  async function deleteSource(filename) {
+    if (!currentWorkspace || !currentPassword) {
+      setConnectionFeedback('⚠️ Please join a workspace first', 'warning');
+      return;
+    }
+    
+    if (!confirm(`Are you sure you want to delete "${filename}"?`)) {
+      return;
+    }
     
     try {
+      // Use update with a dummy file to effectively delete
+      const dummyContent = new Blob(['dummy content for deletion'], { type: 'text/plain' });
+      const dummyFile = new File([dummyContent], 'dummy.txt', { type: 'text/plain' });
+      
+      const formData = new FormData();
+      formData.append('index_name', currentWorkspace);
+      formData.append('password', currentPassword);
+      formData.append('old_file_name', filename);
+      formData.append('new_file', dummyFile);
+      
       const resp = await apiCall('/update', {
         method: 'POST',
         body: formData
       });
       
       const data = await resp.json();
-      setFeedback(uploadFeedback, `✅ Updated (${data.chunks_uploaded || 0} chunks)`, 'success');
-      uploadFileInput.value = '';
-      updateFileName.value = '';
-      addMessage(`🔄 Updated: ${oldName} → ${file.name} (${data.chunks_uploaded || 0} chunks)`, 'system');
+      
+      // Remove from sources list
+      const index = sources.indexOf(filename);
+      if (index !== -1) {
+        sources.splice(index, 1);
+        saveSources();
+        addMessage(`🗑️ Deleted source: ${filename}`, 'system');
+        setConnectionFeedback(`✅ Deleted ${filename}`, 'success');
+      }
       
     } catch (err) {
-      console.error('Update error:', err);
-      setFeedback(uploadFeedback, `❌ ${err.message}`, 'error');
-    } finally {
-      updateDocBtn.disabled = false;
+      console.error('Delete error:', err);
+      addMessage(`❌ Failed to delete ${filename}: ${err.message}`, 'system');
+      setConnectionFeedback(`❌ ${err.message}`, 'error');
     }
-  });
+  }
 
-  // ---- REFRESH (clear chat) ----
-  refreshChatBtn.addEventListener('click', () => {
-    const { index } = getStoredCreds();
-    if (index) {
-      messageArea.innerHTML = `<div class="message system">🔄 Chat cleared. Workspace: ${index}</div>`;
-    } else {
-      messageArea.innerHTML = `<div class="message system">💬 Chat cleared.</div>`;
+  async function sendMessage(question) {
+    if (!currentWorkspace || !currentPassword) {
+      addMessage('⚠️ Please join a workspace first.', 'system');
+      return;
     }
-  });
-
-  // ---- INIT ----
-  (function init() {
-    // Load saved backend URL
-    getBackendUrl();
     
-    if (isJoined()) {
-      updateUIForJoined();
-      const { index } = getStoredCreds();
-      messageArea.innerHTML = `<div class="message system">🔐 Reconnected to workspace "${index}".</div>`;
-    } else {
-      resetWorkspace();
+    if (!question.trim()) return;
+    
+    addMessage(question, 'user');
+    chatInput.value = '';
+    
+    const botMsg = document.createElement('div');
+    botMsg.className = 'message assistant';
+    botMsg.innerHTML = `<div class="bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+    messagesContainer.appendChild(botMsg);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    try {
+      const resp = await apiCall('/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index_name: currentWorkspace, password: currentPassword, question })
+      });
+      
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let fullAnswer = '';
+      botMsg.innerHTML = `<div class="bubble"></div>`;
+      const bubble = botMsg.querySelector('.bubble');
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        fullAnswer += chunk;
+        bubble.textContent = fullAnswer;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+      
+      if (!fullAnswer.trim()) {
+        bubble.textContent = '⚠️ Empty response from server.';
+        bubble.style.color = '#ef4444';
+      }
+      
+    } catch (err) {
+      botMsg.innerHTML = `<div class="bubble" style="color: #ef4444;">❌ ${err.message}</div>`;
     }
-    createCard.classList.add('hidden');
-    joinCard.classList.add('hidden');
+  }
+
+  // ===== UPDATE HANDLER =====
+  async function handleUpdate() {
+    const oldFileName = updateFileName.value.trim();
+    const file = updateFileInput.files[0];
+    
+    if (!oldFileName) {
+      setFeedback(updateFeedback, '⚠️ Please enter the filename to replace.', 'warning');
+      return;
+    }
+    
+    if (!file) {
+      setFeedback(updateFeedback, '⚠️ Please select a new file.', 'warning');
+      return;
+    }
+    
+    if (!currentWorkspace || !currentPassword) {
+      setFeedback(updateFeedback, '⚠️ Please join a workspace first.', 'error');
+      return;
+    }
+    
+    // Check if the old file exists in sources (optional but helpful)
+    if (!sources.includes(oldFileName)) {
+      setFeedback(updateFeedback, `⚠️ "${oldFileName}" not found in sources. Will add as new file.`, 'warning');
+    }
+    
+    setFeedback(updateFeedback, '⏳ Updating...', 'warning');
+    updateBtn.disabled = true;
+    
+    try {
+      const data = await updateDocument(oldFileName, file);
+      
+      let message = `✅ Updated "${oldFileName}" → "${file.name}" (${data.chunks_uploaded || 0} chunks)`;
+      if (!sources.includes(oldFileName)) {
+        message = `✅ Added "${file.name}" (${data.chunks_uploaded || 0} chunks)`;
+      }
+      
+      setFeedback(updateFeedback, message, 'success');
+      addMessage(`🔄 ${message}`, 'system');
+      setConnectionFeedback(`✅ Updated successfully`, 'success');
+      
+      // Clear fields on success
+      updateFileName.value = '';
+      updateFileInput.value = '';
+      
+    } catch (err) {
+      setFeedback(updateFeedback, `❌ ${err.message}`, 'error');
+      addMessage(`❌ Failed to update "${oldFileName}": ${err.message}`, 'system');
+      setConnectionFeedback(`❌ ${err.message}`, 'error');
+    } finally {
+      updateBtn.disabled = false;
+    }
+  }
+
+  // ===== EVENT LISTENERS =====
+
+  // Backend URL
+  saveServerBtn.addEventListener('click', () => {
+    let url = backendUrl.value.trim();
+    if (!url) url = 'http://localhost:8000';
+    if (url.endsWith('/')) url = url.slice(0, -1);
+    setBackendUrl(url);
+    setConnectionFeedback(`✅ Backend URL saved: ${url}`, 'success');
+  });
+
+  // Join workspace
+  joinWorkspaceBtn.addEventListener('click', async () => {
+    const name = joinIndexName.value.trim();
+    const password = joinPassword.value.trim();
+    if (!name || !password) {
+      setConnectionFeedback('❌ Name and password required', 'error');
+      return;
+    }
+    
+    setConnectionFeedback('⏳ Connecting...', 'warning');
+    
+    try {
+      await joinWorkspace(name, password);
+      setConnectionFeedback(`✅ Connected to "${name}"`, 'success');
+    } catch (err) {
+      setConnectionFeedback(`❌ ${err.message}`, 'error');
+    }
+  });
+
+  // Create workspace
+  createWorkspaceBtn.addEventListener('click', () => {
+    modalTitle.textContent = 'Create Workspace';
+    modalIndexName.value = joinIndexName.value.trim() || 'my-workspace';
+    modalPassword.value = joinPassword.value.trim() || 'pass123';
+    modalCloud.value = 'aws';
+    modalRegion.value = 'us-east-1';
+    modalExtraFields.style.display = 'block';
+    modalError.textContent = '';
+    modalOverlay.classList.add('active');
+    
+    modalConfirm.onclick = async () => {
+      const name = modalIndexName.value.trim();
+      const password = modalPassword.value.trim();
+      const cloud = modalCloud.value.trim() || 'aws';
+      const region = modalRegion.value.trim() || 'us-east-1';
+      
+      if (!name || password.length < 4) {
+        modalError.textContent = 'Name and password (min 4 chars) required';
+        return;
+      }
+      
+      modalError.textContent = '';
+      modalOverlay.classList.remove('active');
+      
+      setConnectionFeedback('⏳ Creating workspace...', 'warning');
+      
+      try {
+        await createWorkspace(name, password, cloud, region);
+        setConnectionFeedback(`✅ Created "${name}"`, 'success');
+        joinIndexName.value = name;
+        joinPassword.value = password;
+      } catch (err) {
+        setConnectionFeedback(`❌ ${err.message}`, 'error');
+      }
+    };
+  });
+
+  modalCancel.addEventListener('click', () => {
+    modalOverlay.classList.remove('active');
+  });
+
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) modalOverlay.classList.remove('active');
+  });
+
+  // Update handler
+  updateBtn.addEventListener('click', handleUpdate);
+
+  clearUpdateBtn.addEventListener('click', () => {
+    updateFileName.value = '';
+    updateFileInput.value = '';
+    setFeedback(updateFeedback, '🧹 Cleared', '');
+    setTimeout(() => {
+      setFeedback(updateFeedback, '', '');
+    }, 1500);
+  });
+
+  // Enter key on update fields
+  updateFileName.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      updateFileInput.focus();
+    }
+  });
+
+  updateFileInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      updateBtn.click();
+    }
+  });
+
+  // Send message
+  sendBtn.addEventListener('click', () => {
+    const q = chatInput.value.trim();
+    if (q) sendMessage(q);
+  });
+
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendBtn.click();
+    }
+  });
+
+  // Upload file
+  attachBtn.addEventListener('click', () => fileInput.click());
+  addSourceBtn.addEventListener('click', () => fileInput.click());
+
+  // Refresh sources
+  refreshSourcesBtn.addEventListener('click', () => {
+    loadSources();
+    setConnectionFeedback('🔄 Sources refreshed', '');
+    setTimeout(() => {
+      if (currentWorkspace) {
+        setConnectionFeedback(`✅ Connected to "${currentWorkspace}"`, 'success');
+      }
+    }, 1500);
+  });
+
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!currentWorkspace) {
+      setConnectionFeedback('⚠️ Please join a workspace first', 'error');
+      fileInput.value = '';
+      return;
+    }
+    
+    setConnectionFeedback(`⏳ Uploading ${file.name}...`, 'warning');
+    
+    try {
+      const data = await uploadDocument(file);
+      setConnectionFeedback(`✅ Uploaded ${file.name} (${data.chunks_uploaded || 0} chunks)`, 'success');
+      addMessage(`📄 Uploaded: ${file.name} (${data.chunks_uploaded || 0} chunks)`, 'system');
+    } catch (err) {
+      setConnectionFeedback(`❌ ${err.message}`, 'error');
+      addMessage(`❌ Failed to upload ${file.name}: ${err.message}`, 'system');
+    }
+    
+    fileInput.value = '';
+  });
+
+  // Clear chat
+  clearChatBtn.addEventListener('click', () => {
+    messagesContainer.innerHTML = `<div class="message system"><div class="bubble">💬 Chat cleared.</div></div>`;
+  });
+
+  // Leave workspace
+  leaveWorkspaceBtn.addEventListener('click', () => {
+    clearStoredCreds();
+    updateWorkspaceStatus();
+    sources = [];
+    saveSources();
+    messagesContainer.innerHTML = `<div class="message system"><div class="bubble">👋 Left workspace.</div></div>`;
+    setConnectionFeedback('⚠️ Not connected to any workspace', 'warning');
+  });
+
+  // ===== INIT =====
+  (function init() {
+    getBackendUrl();
+    const { index, password } = getStoredCreds();
+    if (index && password) {
+      updateWorkspaceStatus();
+      loadSources();
+      messagesContainer.innerHTML = `<div class="message system"><div class="bubble">🔐 Reconnected to workspace "${index}".</div></div>`;
+    } else {
+      updateWorkspaceStatus();
+      sources = [];
+      renderSources();
+    }
   })();
 
 })();
