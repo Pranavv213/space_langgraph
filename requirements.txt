@@ -1,0 +1,20 @@
+# FastAPI and Web Server
+fastapi>=0.115.0
+uvicorn>=0.30.0
+python-multipart>=0.0.12
+
+# Core LangChain and LangGraph Ecosystem
+langchain-core>=1.4.0
+langgraph>=1.2.0
+
+# Vector Database and Integrations
+pinecone>=4.1.0
+langchain-pinecone>=0.2.0
+
+# Document Parsing and Processing
+pypdf>=5.0.0
+
+# Local Embeddings and LLM Engines
+langchain-huggingface>=1.2.0
+sentence-transformers>=5.2.0
+langchain-ollama>=0.1.0
